@@ -1,0 +1,1786 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Juan Ángel Pérez Córcoles">
+
+<title>Estimation of a padel play heatmap based on player pose tracking using YOLO26</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="index_files/libs/clipboard/clipboard.min.js"></script>
+<script src="index_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="index_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="index_files/libs/quarto-html/popper.min.js"></script>
+<script src="index_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="index_files/libs/quarto-html/anchor.min.js"></script>
+<link href="index_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="index_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="index_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="index_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="index_files/libs/bootstrap/bootstrap-215b371544c282197b31c8aa00ce3677.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#the-game" id="toc-the-game" class="nav-link active" data-scroll-target="#the-game">1. The Game</a></li>
+  <li><a href="#methodology" id="toc-methodology" class="nav-link" data-scroll-target="#methodology">2. Methodology</a>
+  <ul class="collapse">
+  <li><a href="#player-pose-tracking-with-yolo26" id="toc-player-pose-tracking-with-yolo26" class="nav-link" data-scroll-target="#player-pose-tracking-with-yolo26">2.1 Player Pose Tracking with YOLO26</a></li>
+  <li><a href="#heatmap-generation" id="toc-heatmap-generation" class="nav-link" data-scroll-target="#heatmap-generation">2.2 Heatmap Generation</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">3. Conclusion</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Estimation of a padel play heatmap based on player pose tracking using YOLO26</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Juan Ángel Pérez Córcoles </p>
+          </div>
+  </div>
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>Object tracking methods have been a staple for the development of sports analytics in racket sports, allowing for the extraction of player positions and movements during matches. In this study, we propose a novel approach to estimate a padel play heatmap by leveraging player pose tracking using the YOLO26 object detection model.</p>
+<section id="the-game" class="level2">
+<h2 class="anchored" data-anchor-id="the-game">1. The Game</h2>
+<p>Tracking player movement in a padel game has a particular drawback, because right now most premier padel games are played in an indoor court, the lighting of the facility usually makes the court glass walls reflective, which can create challenges for traditional tracking methods. In the other hand, outdoor padel games have better lighting conditions, but the light makes the background of the court, which is usually occupied by spectators, more complex and noisy for tracking algorithms.</p>
+<p>Because of this we decided to select a play of a particular game which had nearly ideal conditions, the 2024 World Championship game 2 which faced Juan Lebrón and Ale Galán against Federico Chingotto and Agustín Tapia. The game was played in an outdoor court with good lighting conditions and a relatively simple background, making it suitable for our analysis.</p>
+<p>You can watch the full game here: https://www.youtube.com/watch?v=oxVDX7lMwhg</p>
+</section>
+<section id="methodology" class="level2">
+<h2 class="anchored" data-anchor-id="methodology">2. Methodology</h2>
+<section id="player-pose-tracking-with-yolo26" class="level3">
+<h3 class="anchored" data-anchor-id="player-pose-tracking-with-yolo26">2.1 Player Pose Tracking with YOLO26</h3>
+<p>In order to track the players’ positions and movements, we utilized YOLO26, a state-of-the-art object detection model that is capable of detecting and localizing players in real-time.</p>
+<p>We use the YOLO26 pose estimation model to detect 17 keypoints of each player, which include the head, shoulders, elbows, wrists, hips, knees, and ankles. We extracted these keypoints into a CSV file for the creation of the heatmap.</p>
+<div id="785ac1c8" class="cell" data-execution_count="1">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> csv</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> YOLO</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> solutions</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics.utils.downloads <span class="im">import</span> safe_download</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> YOLO(<span class="st">"yolo26n-pose.pt"</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.track(source<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\v</span><span class="vs">ideo1</span><span class="dv">.</span><span class="vs">mp4"</span>, show <span class="op">=</span> <span class="va">True</span>, save <span class="op">=</span> <span class="va">True</span>, project<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults"</span>,</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"tracking_lebron"</span>, persist<span class="op">=</span> <span class="va">True</span>,  imgsz <span class="op">=</span> <span class="dv">1920</span>, conf <span class="op">=</span> <span class="fl">0.05</span>, tracker<span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="er">\</span><span class="vs">custom_botsort</span><span class="dv">.</span><span class="vs">yaml"</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<div class="ansi-escaped-output">
+<pre>Downloading https://github.com/ultralytics/assets/releases/download/v8.4.0/yolo26n-pose.pt to 'yolo26n-pose.pt': 100% ━━━━━━━━━━━━ 7.5MB 33.8MB/s 0.2s.2s&lt;0.0s
+
+
+
+WARNING 
+
+Inference results will accumulate in RAM unless `stream=True` is passed, which can cause out-of-memory errors for large
+
+sources or long-running streams and videos. See https://docs.ultralytics.com/modes/predict for help.
+
+
+
+Example:
+
+    results = model(source=..., stream=True)  # generator of Results objects
+
+    for r in results:
+
+        boxes = r.boxes  # Boxes object for bbox outputs
+
+        masks = r.masks  # Masks object for segment masks outputs
+
+        probs = r.probs  # Class probabilities for classification outputs
+
+
+
+video 1/1 (frame 1/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 503.4ms
+
+video 1/1 (frame 2/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 457.6ms
+
+video 1/1 (frame 3/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 491.6ms
+
+video 1/1 (frame 4/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 500.7ms
+
+video 1/1 (frame 5/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 510.6ms
+
+video 1/1 (frame 6/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 523.4ms
+
+video 1/1 (frame 7/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 480.7ms
+
+video 1/1 (frame 8/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 497.7ms
+
+video 1/1 (frame 9/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 505.6ms
+
+video 1/1 (frame 10/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 460.2ms
+
+video 1/1 (frame 11/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 462.9ms
+
+video 1/1 (frame 12/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 499.4ms
+
+video 1/1 (frame 13/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 493.6ms
+
+video 1/1 (frame 14/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 473.2ms
+
+video 1/1 (frame 15/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 504.6ms
+
+video 1/1 (frame 16/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 473.2ms
+
+video 1/1 (frame 17/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 547.3ms
+
+video 1/1 (frame 18/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 587.1ms
+
+video 1/1 (frame 19/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 555.8ms
+
+video 1/1 (frame 20/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 511.2ms
+
+video 1/1 (frame 21/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 542.2ms
+
+video 1/1 (frame 22/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 545.4ms
+
+video 1/1 (frame 23/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 521.7ms
+
+video 1/1 (frame 24/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 568.5ms
+
+video 1/1 (frame 25/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 518.7ms
+
+video 1/1 (frame 26/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 545.4ms
+
+video 1/1 (frame 27/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 498.1ms
+
+video 1/1 (frame 28/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 500.5ms
+
+video 1/1 (frame 29/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 517.5ms
+
+video 1/1 (frame 30/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 531.8ms
+
+video 1/1 (frame 31/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 523.6ms
+
+video 1/1 (frame 32/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 529.3ms
+
+video 1/1 (frame 33/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 494.3ms
+
+video 1/1 (frame 34/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 520.0ms
+
+video 1/1 (frame 35/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 524.3ms
+
+video 1/1 (frame 36/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 534.3ms
+
+video 1/1 (frame 37/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 517.4ms
+
+video 1/1 (frame 38/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 528.2ms
+
+video 1/1 (frame 39/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 519.7ms
+
+video 1/1 (frame 40/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 607.1ms
+
+video 1/1 (frame 41/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 590.1ms
+
+video 1/1 (frame 42/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 597.5ms
+
+video 1/1 (frame 43/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 598.9ms
+
+video 1/1 (frame 44/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 570.6ms
+
+video 1/1 (frame 45/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 551.1ms
+
+video 1/1 (frame 46/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 539.9ms
+
+video 1/1 (frame 47/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 523.5ms
+
+video 1/1 (frame 48/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 512.9ms
+
+video 1/1 (frame 49/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 584.8ms
+
+video 1/1 (frame 50/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 548.2ms
+
+video 1/1 (frame 51/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 534.1ms
+
+video 1/1 (frame 52/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 558.3ms
+
+video 1/1 (frame 53/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 527.4ms
+
+video 1/1 (frame 54/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 521.6ms
+
+video 1/1 (frame 55/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 572.1ms
+
+video 1/1 (frame 56/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 566.5ms
+
+video 1/1 (frame 57/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 621.2ms
+
+video 1/1 (frame 58/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 666.4ms
+
+video 1/1 (frame 59/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 576.9ms
+
+video 1/1 (frame 60/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 525.9ms
+
+video 1/1 (frame 61/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 548.7ms
+
+video 1/1 (frame 62/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 532.4ms
+
+video 1/1 (frame 63/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 564.9ms
+
+video 1/1 (frame 64/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 526.5ms
+
+video 1/1 (frame 65/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 555.1ms
+
+video 1/1 (frame 66/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 539.2ms
+
+video 1/1 (frame 67/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 533.0ms
+
+video 1/1 (frame 68/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 509.6ms
+
+video 1/1 (frame 69/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 594.0ms
+
+video 1/1 (frame 70/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 535.4ms
+
+video 1/1 (frame 71/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 551.6ms
+
+video 1/1 (frame 72/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 526.3ms
+
+video 1/1 (frame 73/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 549.6ms
+
+video 1/1 (frame 74/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 531.2ms
+
+video 1/1 (frame 75/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 591.9ms
+
+video 1/1 (frame 76/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 548.9ms
+
+video 1/1 (frame 77/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 535.9ms
+
+video 1/1 (frame 78/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 532.4ms
+
+video 1/1 (frame 79/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 528.8ms
+
+video 1/1 (frame 80/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 520.0ms
+
+video 1/1 (frame 81/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 542.1ms
+
+video 1/1 (frame 82/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 530.6ms
+
+video 1/1 (frame 83/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 544.5ms
+
+video 1/1 (frame 84/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 596.9ms
+
+video 1/1 (frame 85/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 539.8ms
+
+video 1/1 (frame 86/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 618.6ms
+
+video 1/1 (frame 87/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 549.3ms
+
+video 1/1 (frame 88/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 549.5ms
+
+video 1/1 (frame 89/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 572.9ms
+
+video 1/1 (frame 90/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 566.7ms
+
+video 1/1 (frame 91/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 563.8ms
+
+video 1/1 (frame 92/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 558.8ms
+
+video 1/1 (frame 93/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 554.2ms
+
+video 1/1 (frame 94/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 550.0ms
+
+video 1/1 (frame 95/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 558.4ms
+
+video 1/1 (frame 96/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 570.9ms
+
+video 1/1 (frame 97/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 619.6ms
+
+video 1/1 (frame 98/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 553.9ms
+
+video 1/1 (frame 99/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 559.0ms
+
+video 1/1 (frame 100/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 571.1ms
+
+video 1/1 (frame 101/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 552.6ms
+
+video 1/1 (frame 102/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 547.3ms
+
+video 1/1 (frame 103/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 556.3ms
+
+video 1/1 (frame 104/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 550.4ms
+
+video 1/1 (frame 105/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 571.5ms
+
+video 1/1 (frame 106/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 558.5ms
+
+video 1/1 (frame 107/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 549.2ms
+
+video 1/1 (frame 108/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 568.7ms
+
+video 1/1 (frame 109/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 521.0ms
+
+video 1/1 (frame 110/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 563.3ms
+
+video 1/1 (frame 111/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 554.4ms
+
+video 1/1 (frame 112/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 558.4ms
+
+video 1/1 (frame 113/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 550.5ms
+
+video 1/1 (frame 114/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 555.6ms
+
+video 1/1 (frame 115/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 552.2ms
+
+video 1/1 (frame 116/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 558.2ms
+
+video 1/1 (frame 117/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 547.9ms
+
+video 1/1 (frame 118/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 562.4ms
+
+video 1/1 (frame 119/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 570.2ms
+
+video 1/1 (frame 120/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 539.1ms
+
+video 1/1 (frame 121/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 557.8ms
+
+video 1/1 (frame 122/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 547.8ms
+
+video 1/1 (frame 123/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 565.9ms
+
+video 1/1 (frame 124/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 570.8ms
+
+video 1/1 (frame 125/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 543.5ms
+
+video 1/1 (frame 126/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 573.8ms
+
+video 1/1 (frame 127/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 537.3ms
+
+video 1/1 (frame 128/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 567.1ms
+
+video 1/1 (frame 129/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.9ms
+
+video 1/1 (frame 130/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 540.0ms
+
+video 1/1 (frame 131/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 553.9ms
+
+video 1/1 (frame 132/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 553.4ms
+
+video 1/1 (frame 133/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.9ms
+
+video 1/1 (frame 134/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 539.4ms
+
+video 1/1 (frame 135/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 540.0ms
+
+video 1/1 (frame 136/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 548.0ms
+
+video 1/1 (frame 137/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 578.9ms
+
+video 1/1 (frame 138/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 561.3ms
+
+video 1/1 (frame 139/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 624.8ms
+
+video 1/1 (frame 140/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 618.7ms
+
+video 1/1 (frame 141/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 540.9ms
+
+video 1/1 (frame 142/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.6ms
+
+video 1/1 (frame 143/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 582.0ms
+
+video 1/1 (frame 144/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 648.7ms
+
+video 1/1 (frame 145/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 609.0ms
+
+video 1/1 (frame 146/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 556.9ms
+
+video 1/1 (frame 147/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 579.9ms
+
+video 1/1 (frame 148/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 553.3ms
+
+video 1/1 (frame 149/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 541.2ms
+
+video 1/1 (frame 150/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.6ms
+
+video 1/1 (frame 151/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 582.5ms
+
+video 1/1 (frame 152/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 566.1ms
+
+video 1/1 (frame 153/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 557.8ms
+
+video 1/1 (frame 154/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 568.6ms
+
+video 1/1 (frame 155/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 538.7ms
+
+video 1/1 (frame 156/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 551.6ms
+
+video 1/1 (frame 157/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 576.6ms
+
+video 1/1 (frame 158/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 557.2ms
+
+video 1/1 (frame 159/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 548.7ms
+
+video 1/1 (frame 160/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 541.9ms
+
+video 1/1 (frame 161/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 520.0ms
+
+video 1/1 (frame 162/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 551.6ms
+
+video 1/1 (frame 163/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 531.6ms
+
+video 1/1 (frame 164/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 528.5ms
+
+video 1/1 (frame 165/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 571.4ms
+
+video 1/1 (frame 166/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.1ms
+
+video 1/1 (frame 167/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 575.9ms
+
+video 1/1 (frame 168/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 612.9ms
+
+video 1/1 (frame 169/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 574.4ms
+
+video 1/1 (frame 170/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 559.1ms
+
+video 1/1 (frame 171/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 583.3ms
+
+video 1/1 (frame 172/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 538.0ms
+
+video 1/1 (frame 173/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 554.4ms
+
+video 1/1 (frame 174/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 580.1ms
+
+video 1/1 (frame 175/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 549.3ms
+
+video 1/1 (frame 176/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 524.8ms
+
+video 1/1 (frame 177/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 524.4ms
+
+video 1/1 (frame 178/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 530.4ms
+
+video 1/1 (frame 179/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 525.0ms
+
+video 1/1 (frame 180/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 676.9ms
+
+video 1/1 (frame 181/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 902.5ms
+
+video 1/1 (frame 182/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 604.1ms
+
+video 1/1 (frame 183/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 545.0ms
+
+video 1/1 (frame 184/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 557.6ms
+
+video 1/1 (frame 185/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 585.7ms
+
+video 1/1 (frame 186/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 523.1ms
+
+video 1/1 (frame 187/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 560.5ms
+
+video 1/1 (frame 188/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 542.8ms
+
+video 1/1 (frame 189/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 546.9ms
+
+video 1/1 (frame 190/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 521.6ms
+
+video 1/1 (frame 191/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 533.8ms
+
+video 1/1 (frame 192/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 531.5ms
+
+video 1/1 (frame 193/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 563.5ms
+
+video 1/1 (frame 194/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 564.6ms
+
+video 1/1 (frame 195/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 537.9ms
+
+video 1/1 (frame 196/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.2ms
+
+video 1/1 (frame 197/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 545.9ms
+
+video 1/1 (frame 198/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 555.4ms
+
+video 1/1 (frame 199/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 556.2ms
+
+video 1/1 (frame 200/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.8ms
+
+video 1/1 (frame 201/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 541.2ms
+
+video 1/1 (frame 202/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 554.3ms
+
+video 1/1 (frame 203/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 564.5ms
+
+video 1/1 (frame 204/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 549.0ms
+
+video 1/1 (frame 205/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 524.4ms
+
+video 1/1 (frame 206/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 535.3ms
+
+video 1/1 (frame 207/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 549.6ms
+
+video 1/1 (frame 208/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 562.5ms
+
+video 1/1 (frame 209/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 610.8ms
+
+video 1/1 (frame 210/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 530.2ms
+
+video 1/1 (frame 211/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 487.4ms
+
+video 1/1 (frame 212/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 533.2ms
+
+video 1/1 (frame 213/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 603.9ms
+
+video 1/1 (frame 214/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 540.3ms
+
+video 1/1 (frame 215/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 546.2ms
+
+video 1/1 (frame 216/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.8ms
+
+video 1/1 (frame 217/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 603.6ms
+
+video 1/1 (frame 218/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 551.7ms
+
+video 1/1 (frame 219/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.9ms
+
+video 1/1 (frame 220/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 498.4ms
+
+video 1/1 (frame 221/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 520.7ms
+
+video 1/1 (frame 222/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 527.0ms
+
+video 1/1 (frame 223/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 507.1ms
+
+video 1/1 (frame 224/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 511.9ms
+
+video 1/1 (frame 225/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 521.1ms
+
+video 1/1 (frame 226/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 558.0ms
+
+video 1/1 (frame 227/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 494.9ms
+
+video 1/1 (frame 228/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 509.6ms
+
+video 1/1 (frame 229/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 487.3ms
+
+video 1/1 (frame 230/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 507.2ms
+
+video 1/1 (frame 231/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 541.1ms
+
+video 1/1 (frame 232/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 536.3ms
+
+video 1/1 (frame 233/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 559.0ms
+
+video 1/1 (frame 234/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 535.4ms
+
+video 1/1 (frame 235/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 537.9ms
+
+video 1/1 (frame 236/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 532.7ms
+
+video 1/1 (frame 237/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 540.5ms
+
+video 1/1 (frame 238/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 506.2ms
+
+video 1/1 (frame 239/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 539.5ms
+
+video 1/1 (frame 240/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 532.6ms
+
+video 1/1 (frame 241/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 531.3ms
+
+video 1/1 (frame 242/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 536.8ms
+
+video 1/1 (frame 243/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 552.3ms
+
+video 1/1 (frame 244/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 516.7ms
+
+video 1/1 (frame 245/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 568.5ms
+
+video 1/1 (frame 246/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 552.3ms
+
+video 1/1 (frame 247/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 538.2ms
+
+video 1/1 (frame 248/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 517.9ms
+
+video 1/1 (frame 249/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 553.2ms
+
+video 1/1 (frame 250/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 516.5ms
+
+video 1/1 (frame 251/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 524.2ms
+
+video 1/1 (frame 252/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 545.7ms
+
+video 1/1 (frame 253/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 508.0ms
+
+video 1/1 (frame 254/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 511.0ms
+
+video 1/1 (frame 255/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 535.4ms
+
+video 1/1 (frame 256/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 520.0ms
+
+video 1/1 (frame 257/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 518.8ms
+
+video 1/1 (frame 258/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 523.2ms
+
+video 1/1 (frame 259/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 525.8ms
+
+video 1/1 (frame 260/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 505.5ms
+
+video 1/1 (frame 261/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 503.6ms
+
+video 1/1 (frame 262/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 518.7ms
+
+video 1/1 (frame 263/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 512.2ms
+
+video 1/1 (frame 264/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 576.5ms
+
+video 1/1 (frame 265/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 533.9ms
+
+video 1/1 (frame 266/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 551.9ms
+
+video 1/1 (frame 267/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 531.9ms
+
+video 1/1 (frame 268/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 572.9ms
+
+video 1/1 (frame 269/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 548.9ms
+
+video 1/1 (frame 270/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 571.8ms
+
+video 1/1 (frame 271/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 567.4ms
+
+video 1/1 (frame 272/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 560.7ms
+
+video 1/1 (frame 273/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 584.1ms
+
+video 1/1 (frame 274/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 557.9ms
+
+video 1/1 (frame 275/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 547.1ms
+
+video 1/1 (frame 276/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 551.8ms
+
+video 1/1 (frame 277/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 575.0ms
+
+video 1/1 (frame 278/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 542.2ms
+
+video 1/1 (frame 279/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 532.2ms
+
+video 1/1 (frame 280/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 533.3ms
+
+video 1/1 (frame 281/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 574.0ms
+
+video 1/1 (frame 282/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 535.0ms
+
+video 1/1 (frame 283/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 541.0ms
+
+video 1/1 (frame 284/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 564.4ms
+
+video 1/1 (frame 285/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 544.3ms
+
+video 1/1 (frame 286/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 552.1ms
+
+video 1/1 (frame 287/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 551.6ms
+
+video 1/1 (frame 288/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 552.6ms
+
+video 1/1 (frame 289/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 546.9ms
+
+video 1/1 (frame 290/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 569.1ms
+
+video 1/1 (frame 291/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 577.5ms
+
+video 1/1 (frame 292/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 557.7ms
+
+video 1/1 (frame 293/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 572.3ms
+
+video 1/1 (frame 294/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 594.3ms
+
+video 1/1 (frame 295/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 548.1ms
+
+video 1/1 (frame 296/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 556.6ms
+
+video 1/1 (frame 297/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 599.5ms
+
+video 1/1 (frame 298/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 578.6ms
+
+video 1/1 (frame 299/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 581.9ms
+
+video 1/1 (frame 300/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 574.2ms
+
+video 1/1 (frame 301/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 604.7ms
+
+video 1/1 (frame 302/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 621.0ms
+
+video 1/1 (frame 303/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 575.6ms
+
+video 1/1 (frame 304/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 537.2ms
+
+video 1/1 (frame 305/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 528.3ms
+
+video 1/1 (frame 306/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 538.6ms
+
+video 1/1 (frame 307/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 576.8ms
+
+video 1/1 (frame 308/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 545.7ms
+
+video 1/1 (frame 309/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 578.8ms
+
+video 1/1 (frame 310/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 534.5ms
+
+video 1/1 (frame 311/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 539.8ms
+
+video 1/1 (frame 312/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 615.6ms
+
+video 1/1 (frame 313/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 585.9ms
+
+video 1/1 (frame 314/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 560.1ms
+
+video 1/1 (frame 315/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 578.5ms
+
+video 1/1 (frame 316/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 567.4ms
+
+video 1/1 (frame 317/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 555.8ms
+
+video 1/1 (frame 318/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 539.9ms
+
+video 1/1 (frame 319/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 547.6ms
+
+video 1/1 (frame 320/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 542.8ms
+
+video 1/1 (frame 321/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 554.9ms
+
+video 1/1 (frame 322/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 576.3ms
+
+video 1/1 (frame 323/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 536.4ms
+
+video 1/1 (frame 324/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 539.4ms
+
+video 1/1 (frame 325/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 559.9ms
+
+video 1/1 (frame 326/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 555.5ms
+
+video 1/1 (frame 327/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 552.3ms
+
+video 1/1 (frame 328/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 606.6ms
+
+video 1/1 (frame 329/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.5ms
+
+video 1/1 (frame 330/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 537.6ms
+
+video 1/1 (frame 331/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 583.4ms
+
+video 1/1 (frame 332/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 511.6ms
+
+video 1/1 (frame 333/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 537.4ms
+
+video 1/1 (frame 334/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 518.1ms
+
+video 1/1 (frame 335/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 532.4ms
+
+video 1/1 (frame 336/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 615.1ms
+
+video 1/1 (frame 337/394) C:\Padel_Project\video1.mp4: 1088x1920 4 persons, 529.5ms
+
+video 1/1 (frame 338/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 555.4ms
+
+video 1/1 (frame 339/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 510.0ms
+
+video 1/1 (frame 340/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 552.3ms
+
+video 1/1 (frame 341/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 549.6ms
+
+video 1/1 (frame 342/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 521.3ms
+
+video 1/1 (frame 343/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 627.3ms
+
+video 1/1 (frame 344/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 547.8ms
+
+video 1/1 (frame 345/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 578.8ms
+
+video 1/1 (frame 346/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 551.8ms
+
+video 1/1 (frame 347/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 538.6ms
+
+video 1/1 (frame 348/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 547.5ms
+
+video 1/1 (frame 349/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 544.8ms
+
+video 1/1 (frame 350/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 535.0ms
+
+video 1/1 (frame 351/394) C:\Padel_Project\video1.mp4: 1088x1920 5 persons, 557.7ms
+
+video 1/1 (frame 352/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 542.0ms
+
+video 1/1 (frame 353/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 567.6ms
+
+video 1/1 (frame 354/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 562.1ms
+
+video 1/1 (frame 355/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 550.9ms
+
+video 1/1 (frame 356/394) C:\Padel_Project\video1.mp4: 1088x1920 6 persons, 549.5ms
+
+video 1/1 (frame 357/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 571.1ms
+
+video 1/1 (frame 358/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 538.2ms
+
+video 1/1 (frame 359/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 578.2ms
+
+video 1/1 (frame 360/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 547.7ms
+
+video 1/1 (frame 361/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 545.8ms
+
+video 1/1 (frame 362/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 549.7ms
+
+video 1/1 (frame 363/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 548.5ms
+
+video 1/1 (frame 364/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 536.8ms
+
+video 1/1 (frame 365/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 541.7ms
+
+video 1/1 (frame 366/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 555.2ms
+
+video 1/1 (frame 367/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 569.3ms
+
+video 1/1 (frame 368/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 564.8ms
+
+video 1/1 (frame 369/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 532.0ms
+
+video 1/1 (frame 370/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 548.7ms
+
+video 1/1 (frame 371/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 568.5ms
+
+video 1/1 (frame 372/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 554.5ms
+
+video 1/1 (frame 373/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 545.8ms
+
+video 1/1 (frame 374/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 572.2ms
+
+video 1/1 (frame 375/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 555.4ms
+
+video 1/1 (frame 376/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 600.3ms
+
+video 1/1 (frame 377/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 528.2ms
+
+video 1/1 (frame 378/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 544.2ms
+
+video 1/1 (frame 379/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 589.2ms
+
+video 1/1 (frame 380/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 526.9ms
+
+video 1/1 (frame 381/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 545.2ms
+
+video 1/1 (frame 382/394) C:\Padel_Project\video1.mp4: 1088x1920 7 persons, 500.3ms
+
+video 1/1 (frame 383/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 541.1ms
+
+video 1/1 (frame 384/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 510.8ms
+
+video 1/1 (frame 385/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 517.2ms
+
+video 1/1 (frame 386/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 510.5ms
+
+video 1/1 (frame 387/394) C:\Padel_Project\video1.mp4: 1088x1920 8 persons, 521.3ms
+
+video 1/1 (frame 388/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 537.1ms
+
+video 1/1 (frame 389/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 520.3ms
+
+video 1/1 (frame 390/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 547.7ms
+
+video 1/1 (frame 391/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 532.4ms
+
+video 1/1 (frame 392/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 530.2ms
+
+video 1/1 (frame 393/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 553.5ms
+
+video 1/1 (frame 394/394) C:\Padel_Project\video1.mp4: 1088x1920 9 persons, 540.2ms
+
+Speed: 18.4ms preprocess, 549.2ms inference, 3.8ms postprocess per image at shape (1, 3, 1088, 1920)
+
+Results saved to <span class="ansi-bold">C:\Padel_Project\results\tracking_lebron-2</span>
+</pre>
+</div>
+</div>
+</div>
+<p>While using this model we faced a major challenge, the tracking system had difficulties in detecting the players which were far away from the camera, in order to overcome this we had to change the baseline setting of the <code>botsort.yaml</code> tracking configuration file to increase the detection threshold and reduce false positives.</p>
+<p>The next code snippet shows the configuration changes made to the <code>botsort.yaml</code> file, we changed the track_buffer from 30 to 90 to allow tracks to persist longer when detections are temporarily missed. We also increased the detection confidence threshold from 0.5 to 0.7 so that only higher-confidence detections were considered for tracking.</p>
+<div id="bcf655cd" class="cell" data-execution_count="2">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>tracker_type: botsort <span class="co"># (str) Tracker backend: botsort</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>track_high_thresh: <span class="fl">0.25</span> <span class="co"># (float) First-stage match threshold; raise for cleaner tracks, lower to keep more</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>track_low_thresh: <span class="fl">0.1</span> <span class="co"># (float) Second-stage threshold for low-score matches; balances recovery vs drift</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>new_track_thresh: <span class="fl">0.25</span> <span class="co"># (float) Start a new track if no match ≥ this; higher reduces false tracks</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>track_buffer: <span class="dv">90</span> <span class="co"># (int) Frames to keep lost tracks alive; higher handles occlusion, increases ID switches risk</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>match_thresh: <span class="fl">0.7</span> <span class="co"># (float) Association similarity threshold (IoU/cost); tune with detector quality</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fuse_score: <span class="va">True</span> <span class="co"># (bool) Fuse detection score with motion/IoU for matching; stabilizes weak detections</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># BoT-SORT specifics</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>gmc_method: sparseOptFlow <span class="co"># (str) Global motion compensation: sparseOptFlow|orb|sift|ecc|none; helps moving camera scenes</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># ReID model related thresh</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>proximity_thresh: <span class="fl">0.5</span> <span class="co"># (float) Min IoU to consider tracks proximate for ReID; higher is stricter</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>appearance_thresh: <span class="fl">0.8</span> <span class="co"># (float) Min appearance similarity for ReID; raise to avoid identity swaps</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>with_reid: <span class="va">False</span> <span class="co"># (bool) Enable ReID model use; needs extra model and compute</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>model: auto <span class="co"># (str) ReID model name/path; "auto" uses detector features if available</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-error">
+<div class="ansi-escaped-output">
+<pre><span class="ansi-red-fg ansi-bold">---------------------------------------------------------------------------</span>
+
+<span class="ansi-red-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
+
+Cell <span class="ansi-green-fg ansi-bold">In[2], line 1</span>
+
+<span class="ansi-green-fg ansi-bold">----&gt; 1</span> tracker_type: <span class="ansi-yellow-bg">botsort</span> <span style="font-style:italic;color:rgb(95,135,135)"># (str) Tracker backend: botsort</span>
+
+<span class="ansi-green-fg">      2</span> track_high_thresh: <span style="color:rgb(98,98,98)">0.25</span> <span style="font-style:italic;color:rgb(95,135,135)"># (float) First-stage match threshold; raise for cleaner tracks, lower to keep more</span>
+
+<span class="ansi-green-fg">      3</span> track_low_thresh: <span style="color:rgb(98,98,98)">0.1</span> <span style="font-style:italic;color:rgb(95,135,135)"># (float) Second-stage threshold for low-score matches; balances recovery vs drift</span>
+
+
+
+<span class="ansi-red-fg ansi-bold">NameError</span>: name 'botsort' is not defined</pre>
+</div>
+</div>
+</div>
+<p>Even though these changes improved the tracking performance, we still encountered some challenges with occlusions, for example the ID tracker of a player changed two times during the game but we were able to manually correct the IDs in the CSV file to ensure accurate tracking data.</p>
+</section>
+<section id="heatmap-generation" class="level3">
+<h3 class="anchored" data-anchor-id="heatmap-generation">2.2 Heatmap Generation</h3>
+<p>After obtaining the player positions from the pose tracking, we proceeded to generate a heatmap that visualizes the areas of the court where players spent the most time.</p>
+<p>First, we took the ankle keypoints of each player as they are the most representative of the player’s position on the court and we grouped the data by player ID and frame number.</p>
+<p>Next, we calculated the confidence-weighted average of the two ankle x-coordinates and y-coordinates. In this way we can obtain a representative foot position for each player in each frame. These positions are the used to determine where players spend their most time on the court.</p>
+<div id="5c34e9f0" class="cell" data-execution_count="3">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pandas.core <span class="im">import</span> groupby</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.stats</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.ndimage <span class="im">import</span> gaussian_filter</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Patch</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults</span><span class="er">\</span><span class="vs">players_keypoints</span><span class="dv">.</span><span class="vs">csv"</span>)</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>ankle_point <span class="op">=</span> df[(df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">15</span>) <span class="op">|</span> (df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">16</span>)]</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>combination <span class="op">=</span> ankle_point.groupby([<span class="st">"player_id"</span>, <span class="st">"frame"</span>])</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>X_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"x"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>Y_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"y"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>feet_positions <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"x"</span>: X_feet,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"y"</span>: Y_feet</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>}).reset_index()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<section id="homography" class="level4">
+<h4 class="anchored" data-anchor-id="homography">2.2.1 Homography</h4>
+<p>We have said before that we took the representative foot position of each player in each frame, but that does not mean that the image coordinates are in the same coordinate system as the court. In order to map the player positions to the court coordinates, we applied a homography transformation.</p>
+<p>The homography matrix was calculated from corresponding reference points in the image and court coordinate systems. This matrix was then applied to the representative foot position of every player in each frame, transforming their pixel coordinates into corresponding court coordinates for use in the heatmap. The resulting coordinates were subsequently used to generate the heatmap.</p>
+<div id="f6f983a5" class="cell" data-execution_count="4">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Homography </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>image_points <span class="op">=</span> np.float32([</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">582</span>, <span class="dv">325</span>],    <span class="co"># Top-left</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1390</span>, <span class="dv">325</span>],   <span class="co"># Top-right</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">214</span>, <span class="dv">958</span>],    <span class="co"># Bottom-left</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1715</span>, <span class="dv">958</span>],    <span class="co"># Bottom-right</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">450</span>, <span class="dv">450</span>],      <span class="co"># Net - left post</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1483</span>, <span class="dv">450</span>],     <span class="co"># Net - right post</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">548</span>, <span class="dv">382</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1387</span>, <span class="dv">382</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">965</span>, <span class="dv">382</span>],    <span class="co"># Far service line - center T</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">310</span>, <span class="dv">796</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1622</span>, <span class="dv">796</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">964</span>, <span class="dv">796</span>],   <span class="co"># Near service line - center T</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>court_points <span class="op">=</span> np.float32([</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Original 4 corners</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>],       <span class="co"># Back-left corner</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">0</span>],      <span class="co"># Back-right corner</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">20</span>],      <span class="co"># Front-left corner</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">20</span>],     <span class="co"># Front-right corner</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],      <span class="co"># Net - left post</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],     <span class="co"># Net - right post</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">3.05</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - center T</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - center T</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>H, status <span class="op">=</span> cv2.findHomography(</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    image_points,</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    court_points</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract image coordinates</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> feet_positions[[<span class="st">"x"</span>, <span class="st">"y"</span>]].values.astype(np.float32)</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform into court coordinates</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>court_positions <span class="op">=</span> cv2.perspectiveTransform(</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    points.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>    H</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Add transformed coordinates</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_x"</span>] <span class="op">=</span> court_positions[:, <span class="dv">0</span>]</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_y"</span>] <span class="op">=</span> court_positions[:, <span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</section>
+<section id="heatmap-visualization" class="level4">
+<h4 class="anchored" data-anchor-id="heatmap-visualization">2.2.2 Heatmap Visualization</h4>
+<p>Finally we used the transformed court coordinates to create a heatmap that visualizes the areas of the court where players spent the most time.</p>
+<p>First, the court was defined as a 10 x 20 coordinate system (standard padel court dimensions) corresponding to the width and length of the court. We then divided this area into a grid of 200 x 400 cells, creating a high-resolution grid that allows for detailed visualization of player movement.</p>
+<p>For each player, we extracted their transformed court_x and court_y coordinates and removed any invalid or non-finite values. We also removed coordinates that fell outside the boundaries of the court (sometimes in padel games players do get out of the court but for this particular example that did not happen).</p>
+<p>The valid positions were then converted into a two-dimensional histogram using <code>np.histogram2d()</code>. This divides the court into the predefined grid cells and counts how many player positions fall within each cell. Consequently, cells containing a larger number of player positions represent areas where the player was located more frequently.</p>
+<p>To obtain a smoother representation of player positioning, a Gaussian filter with a sigma of 8 was applied to the resulting histogram. We then normalized the resulting heatmap by dividing all values by the maximum value for that player and we plotted the normalized heatmaps using <code>contourf()</code> with a different color map assigned to each player.</p>
+<p>We also drew the court lines on the heatmap to provide context for the player positions.</p>
+<div id="b1db3719" class="cell" data-execution_count="5">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions </span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Grid for the heatmap</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>nx <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>ny <span class="op">=</span> <span class="dv">400</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>x_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_width, nx <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>y_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_length, ny <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>x_centers <span class="op">=</span> (x_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> x_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>y_centers <span class="op">=</span> (y_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> y_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>X, Y <span class="op">=</span> np.meshgrid(x_centers, y_centers)</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Player colors</span></span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>player_colors <span class="op">=</span> {</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Reds"</span>,</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Blues"</span>,</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Greens"</span>,</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Purples"</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure creation</span></span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">16</span>))</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Heatmap for each player</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique()):</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    player_data <span class="op">=</span> feet_positions[</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        feet_positions[<span class="st">"player_id"</span>] <span class="op">==</span> player_id</span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> player_data[<span class="st">"court_x"</span>].to_numpy()</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> player_data[<span class="st">"court_y"</span>].to_numpy()</span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove invalid points</span></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> np.isfinite(x) <span class="op">&amp;</span> np.isfinite(y)</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only points inside court</span></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> (</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>        (x <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (x <span class="op">&lt;=</span> court_width) <span class="op">&amp;</span></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>        (y <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (y <span class="op">&lt;=</span> court_length)</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2D histogram</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    heatmap, _, _ <span class="op">=</span> np.histogram2d(</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>        x,</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>        y,</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>        bins<span class="op">=</span>[x_edges, y_edges]</span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Transpose because histogram2d returns [x,y]</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> heatmap.T</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Smooth the heatmap</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> gaussian_filter(</span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        sigma<span class="op">=</span><span class="dv">8</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Normalize this player's heatmap</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> heatmap.<span class="bu">max</span>() <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>        heatmap <span class="op">=</span> heatmap <span class="op">/</span> heatmap.<span class="bu">max</span>()</span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>    ax.contourf(</span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>        X,</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>        Y,</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>        levels<span class="op">=</span>np.linspace(<span class="fl">0.05</span>, <span class="dv">1</span>, <span class="dv">15</span>),</span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span>player_colors[player_id],</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">0.45</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="co"># Outer court</span></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">0</span>],</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">0</span>],</span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Net</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Service lines</span></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side service line</span></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="fl">3.05</span>],</span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side service line</span></span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">16.95</span>, <span class="fl">16.95</span>],</span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Center service lines</span></span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side T</span></span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="dv">10</span>],</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side T</span></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],</span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a><span class="co"># Labels </span></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">0</span>, <span class="dv">10</span>)</span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="dv">20</span>)</span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Court width (m)"</span>)</span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Court length (m)"</span>)</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Padel Player Heatmap"</span>)</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a>ax.invert_yaxis()</span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a><span class="co"># Legend</span></span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a>player_names <span class="op">=</span> {</span>
+<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Chingotto"</span>,</span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Tapia"</span>,</span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Lebron"</span>,</span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Galán"</span></span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>legend <span class="op">=</span> [</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>    Patch(</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>        facecolor<span class="op">=</span>plt.get_cmap(player_colors[player_id])(<span class="fl">0.7</span>),</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span>player_names[player_id]</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique())</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>ax.legend(handles<span class="op">=</span>legend)</span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">3. Conclusion</h2>
+<p>Tracking methods are and for ever will be a fundamental part of racket sports analytics, and the use of YOLO26 for player pose tracking has proven to be effective in estimating player positions and movements during padel games.</p>
+<p>This tracking methods can help us obtain valuable insights into player behavior, strategies, and performance, which can be used to improve training and match preparation.</p>
+<p>This study is only a small part of what computer vision methods can do for racket sports, and we hope that this work will inspire further research and development in this area.</p>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const cellDetails = window.document.querySelectorAll(".cell details.code-fold");
+        for (let i=0; i<cellDetails.length; i++) {
+          const details = cellDetails[i];
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell div.sourceCode.cell-code");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

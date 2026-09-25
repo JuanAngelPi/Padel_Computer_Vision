@@ -138,190 +138,130 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h3 class="anchored" data-anchor-id="player-pose-tracking-with-yolo26">2.1 Player Pose Tracking with YOLO26</h3>
 <p>In order to track the players’ positions and movements, we utilized YOLO26, a state-of-the-art object detection model that is capable of detecting and localizing players in real-time.</p>
 <p>We use the YOLO26 pose estimation model to detect 17 keypoints of each player, which include the head, shoulders, elbows, wrists, hips, knees, and ankles. We extracted these keypoints into a CSV file for the creation of the heatmap.</p>
-<div id="785ac1c8" class="cell" data-execution_count="1">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> csv</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> YOLO</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> solutions</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics.utils.downloads <span class="im">import</span> safe_download</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> YOLO(<span class="st">"yolo26n-pose.pt"</span>)</span>
+<div id="785ac1c8" class="cell" data-execution_count="6">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> csv</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> YOLO</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics <span class="im">import</span> solutions</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> ultralytics.utils.downloads <span class="im">import</span> safe_download</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.track(source<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\v</span><span class="vs">ideo1</span><span class="dv">.</span><span class="vs">mp4"</span>, show <span class="op">=</span> <span class="va">True</span>, save <span class="op">=</span> <span class="va">True</span>, project<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults"</span>,</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"tracking_lebron"</span>, persist<span class="op">=</span> <span class="va">True</span>,  imgsz <span class="op">=</span> <span class="dv">1920</span>, conf <span class="op">=</span> <span class="fl">0.05</span>, tracker<span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="er">\</span><span class="vs">custom_botsort</span><span class="dv">.</span><span class="vs">yaml"</span>, verbose <span class="op">=</span> <span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<div class="ansi-escaped-output">
-<pre>WARNING 
-
-Inference results will accumulate in RAM unless `stream=True` is passed, which can cause out-of-memory errors for large
-
-sources or long-running streams and videos. See https://docs.ultralytics.com/modes/predict for help.
-
-
-
-Example:
-
-    results = model(source=..., stream=True)  # generator of Results objects
-
-    for r in results:
-
-        boxes = r.boxes  # Boxes object for bbox outputs
-
-        masks = r.masks  # Masks object for segment masks outputs
-
-        probs = r.probs  # Class probabilities for classification outputs
-
-
-
-Results saved to <span class="ansi-bold">C:\Padel_Project\results\tracking_lebron-5</span>
-</pre>
-</div>
-</div>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>model <span class="op">=</span> YOLO(<span class="st">"yolo26n-pose.pt"</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>results <span class="op">=</span> model.track(source<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\v</span><span class="vs">ideo1</span><span class="dv">.</span><span class="vs">mp4"</span>, show <span class="op">=</span> <span class="va">True</span>, save <span class="op">=</span> <span class="va">True</span>, project<span class="op">=</span><span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults"</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    name<span class="op">=</span><span class="st">"tracking_lebron"</span>, persist<span class="op">=</span> <span class="va">True</span>, stream <span class="op">=</span> <span class="va">True</span>, imgsz <span class="op">=</span> <span class="dv">1920</span>, conf <span class="op">=</span> <span class="fl">0.05</span>, tracker<span class="op">=</span> <span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="er">\</span><span class="vs">custom_botsort</span><span class="dv">.</span><span class="vs">yaml"</span>, verbose <span class="op">=</span> <span class="va">False</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <p>While using this model we faced a major challenge, the tracking system had difficulties in detecting the players which were far away from the camera, in order to overcome this we had to change the baseline setting of the <code>botsort.yaml</code> tracking configuration file to increase the detection threshold and reduce false positives.</p>
 <p>The next code snippet shows the configuration changes made to the <code>botsort.yaml</code> file, we changed the track_buffer from 30 to 90 to allow tracks to persist longer when detections are temporarily missed. We also increased the detection confidence threshold from 0.5 to 0.7 so that only higher-confidence detections were considered for tracking.</p>
-<div id="bcf655cd" class="cell" data-execution_count="2">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>tracker_type: botsort <span class="co"># (str) Tracker backend: botsort</span></span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>track_high_thresh: <span class="fl">0.25</span> <span class="co"># (float) First-stage match threshold; raise for cleaner tracks, lower to keep more</span></span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>track_low_thresh: <span class="fl">0.1</span> <span class="co"># (float) Second-stage threshold for low-score matches; balances recovery vs drift</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>new_track_thresh: <span class="fl">0.25</span> <span class="co"># (float) Start a new track if no match ≥ this; higher reduces false tracks</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>track_buffer: <span class="dv">90</span> <span class="co"># (int) Frames to keep lost tracks alive; higher handles occlusion, increases ID switches risk</span></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>match_thresh: <span class="fl">0.7</span> <span class="co"># (float) Association similarity threshold (IoU/cost); tune with detector quality</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>fuse_score: <span class="va">True</span> <span class="co"># (bool) Fuse detection score with motion/IoU for matching; stabilizes weak detections</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># BoT-SORT specifics</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>gmc_method: sparseOptFlow <span class="co"># (str) Global motion compensation: sparseOptFlow|orb|sift|ecc|none; helps moving camera scenes</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># ReID model related thresh</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>proximity_thresh: <span class="fl">0.5</span> <span class="co"># (float) Min IoU to consider tracks proximate for ReID; higher is stricter</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>appearance_thresh: <span class="fl">0.8</span> <span class="co"># (float) Min appearance similarity for ReID; raise to avoid identity swaps</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>with_reid: <span class="va">False</span> <span class="co"># (bool) Enable ReID model use; needs extra model and compute</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>model: auto <span class="co"># (str) ReID model name/path; "auto" uses detector features if available</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-error">
-<div class="ansi-escaped-output">
-<pre><span class="ansi-red-fg ansi-bold">---------------------------------------------------------------------------</span>
-
-<span class="ansi-red-fg ansi-bold">NameError</span>                                 Traceback (most recent call last)
-
-Cell <span class="ansi-green-fg ansi-bold">In[2], line 1</span>
-
-<span class="ansi-green-fg ansi-bold">----&gt; 1</span> tracker_type: <span class="ansi-yellow-bg">botsort</span> <span style="font-style:italic;color:rgb(95,135,135)"># (str) Tracker backend: botsort</span>
-
-<span class="ansi-green-fg">      2</span> track_high_thresh: <span style="color:rgb(98,98,98)">0.25</span> <span style="font-style:italic;color:rgb(95,135,135)"># (float) First-stage match threshold; raise for cleaner tracks, lower to keep more</span>
-
-<span class="ansi-green-fg">      3</span> track_low_thresh: <span style="color:rgb(98,98,98)">0.1</span> <span style="font-style:italic;color:rgb(95,135,135)"># (float) Second-stage threshold for low-score matches; balances recovery vs drift</span>
-
-
-
-<span class="ansi-red-fg ansi-bold">NameError</span>: name 'botsort' is not defined</pre>
-</div>
-</div>
-</div>
 <p>Even though these changes improved the tracking performance, we still encountered some challenges with occlusions, for example the ID tracker of a player changed two times during the game but we were able to manually correct the IDs in the CSV file to ensure accurate tracking data.</p>
+<p><code>tracker_type</code>: botsort # (str) Tracker backend: botsort <code>track_high_thresh</code>: 0.25 # (float) First-stage match threshold; raise for cleaner tracks, lower to keep more <code>track_low_thresh</code>: 0.1 # (float) Second-stage threshold for low-score matches; balances recovery vs drift <code>new_track_thresh</code>: 0.25 # (float) Start a new track if no match ≥ this; higher reduces false tracks <code>track_buffer</code>: 90 # (int) Frames to keep lost tracks alive; higher handles occlusion, increases ID switches risk <code>match_thresh</code>: 0.7 # (float) Association similarity threshold (IoU/cost); tune with detector quality <code>fuse_score</code>: True # (bool) Fuse detection score with motion/IoU for matching; stabilizes weak detections</p>
+<p>BoT-SORT specifics <code>gmc_method</code>: sparseOptFlow # (str) Global motion compensation: sparseOptFlow|orb|sift|ecc|none; helps moving camera scenes</p>
+<p>ReID model related thresh <code>proximity_thresh</code>: 0.5 # (float) Min IoU to consider tracks proximate for ReID; higher is stricter <code>appearance_thresh</code>: 0.8 # (float) Min appearance similarity for ReID; raise to avoid identity swaps <code>with_reid</code>: False # (bool) Enable ReID model use; needs extra model and compute <code>model</code>: auto # (str) ReID model name/path; “auto” uses detector features if available</p>
 </section>
 <section id="heatmap-generation" class="level3">
 <h3 class="anchored" data-anchor-id="heatmap-generation">2.2 Heatmap Generation</h3>
 <p>After obtaining the player positions from the pose tracking, we proceeded to generate a heatmap that visualizes the areas of the court where players spent the most time.</p>
 <p>First, we took the ankle keypoints of each player as they are the most representative of the player’s position on the court and we grouped the data by player ID and frame number.</p>
 <p>Next, we calculated the confidence-weighted average of the two ankle x-coordinates and y-coordinates. In this way we can obtain a representative foot position for each player in each frame. These positions are the used to determine where players spend their most time on the court.</p>
-<div id="5c34e9f0" class="cell" data-execution_count="3">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pandas.core <span class="im">import</span> groupby</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.stats</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.ndimage <span class="im">import</span> gaussian_filter</span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Patch</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults</span><span class="er">\</span><span class="vs">players_keypoints</span><span class="dv">.</span><span class="vs">csv"</span>)</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>ankle_point <span class="op">=</span> df[(df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">15</span>) <span class="op">|</span> (df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">16</span>)]</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>combination <span class="op">=</span> ankle_point.groupby([<span class="st">"player_id"</span>, <span class="st">"frame"</span>])</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>X_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"x"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>Y_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"y"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>feet_positions <span class="op">=</span> pd.DataFrame({</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"x"</span>: X_feet,</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"y"</span>: Y_feet</span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>}).reset_index()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="5c34e9f0" class="cell" data-execution_count="7">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> numpy <span class="im">as</span> np</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> cv2</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pandas.core <span class="im">import</span> groupby</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> scipy.stats</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.ndimage <span class="im">import</span> gaussian_filter</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> matplotlib.patches <span class="im">import</span> Patch</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df <span class="op">=</span> pd.read_csv(<span class="vs">r"C:</span><span class="er">\</span><span class="vs">Padel_Project</span><span class="ch">\r</span><span class="vs">esults</span><span class="er">\</span><span class="vs">players_keypoints</span><span class="dv">.</span><span class="vs">csv"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>ankle_point <span class="op">=</span> df[(df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">15</span>) <span class="op">|</span> (df[<span class="st">"keypoint_id"</span>] <span class="op">==</span> <span class="dv">16</span>)]</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>combination <span class="op">=</span> ankle_point.groupby([<span class="st">"player_id"</span>, <span class="st">"frame"</span>])</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>X_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"x"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>Y_feet <span class="op">=</span> combination.<span class="bu">apply</span>(<span class="kw">lambda</span> group: np.average(group[<span class="st">"y"</span>], weights<span class="op">=</span>group[<span class="st">"conf"</span>]))</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>feet_positions <span class="op">=</span> pd.DataFrame({</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="st">"x"</span>: X_feet,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="st">"y"</span>: Y_feet</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>}).reset_index()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 <section id="homography" class="level4">
 <h4 class="anchored" data-anchor-id="homography">2.2.1 Homography</h4>
 <p>We have said before that we took the representative foot position of each player in each frame, but that does not mean that the image coordinates are in the same coordinate system as the court. In order to map the player positions to the court coordinates, we applied a homography transformation.</p>
 <p>The homography matrix was calculated from corresponding reference points in the image and court coordinate systems. This matrix was then applied to the representative foot position of every player in each frame, transforming their pixel coordinates into corresponding court coordinates for use in the heatmap. The resulting coordinates were subsequently used to generate the heatmap.</p>
-<div id="f6f983a5" class="cell" data-execution_count="4">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Homography </span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>image_points <span class="op">=</span> np.float32([</span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">582</span>, <span class="dv">325</span>],    <span class="co"># Top-left</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1390</span>, <span class="dv">325</span>],   <span class="co"># Top-right</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">214</span>, <span class="dv">958</span>],    <span class="co"># Bottom-left</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1715</span>, <span class="dv">958</span>],    <span class="co"># Bottom-right</span></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">450</span>, <span class="dv">450</span>],      <span class="co"># Net - left post</span></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1483</span>, <span class="dv">450</span>],     <span class="co"># Net - right post</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">548</span>, <span class="dv">382</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1387</span>, <span class="dv">382</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">965</span>, <span class="dv">382</span>],    <span class="co"># Far service line - center T</span></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>    </span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">310</span>, <span class="dv">796</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1622</span>, <span class="dv">796</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">964</span>, <span class="dv">796</span>],   <span class="co"># Near service line - center T</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>court_points <span class="op">=</span> np.float32([</span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Original 4 corners</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>],       <span class="co"># Back-left corner</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">0</span>],      <span class="co"># Back-right corner</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">20</span>],      <span class="co"># Front-left corner</span></span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">20</span>],     <span class="co"># Front-right corner</span></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],      <span class="co"># Net - left post</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],     <span class="co"># Net - right post</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">3.05</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - center T</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - center T</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>])</span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>H, status <span class="op">=</span> cv2.findHomography(</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>    image_points,</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    court_points</span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract image coordinates</span></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> feet_positions[[<span class="st">"x"</span>, <span class="st">"y"</span>]].values.astype(np.float32)</span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform into court coordinates</span></span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>court_positions <span class="op">=</span> cv2.perspectiveTransform(</span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    points.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>    H</span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>)</span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Add transformed coordinates</span></span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_x"</span>] <span class="op">=</span> court_positions[:, <span class="dv">0</span>]</span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_y"</span>] <span class="op">=</span> court_positions[:, <span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="f6f983a5" class="cell" data-execution_count="8">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Homography </span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>image_points <span class="op">=</span> np.float32([</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">582</span>, <span class="dv">325</span>],    <span class="co"># Top-left</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1390</span>, <span class="dv">325</span>],   <span class="co"># Top-right</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">214</span>, <span class="dv">958</span>],    <span class="co"># Bottom-left</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1715</span>, <span class="dv">958</span>],    <span class="co"># Bottom-right</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">450</span>, <span class="dv">450</span>],      <span class="co"># Net - left post</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1483</span>, <span class="dv">450</span>],     <span class="co"># Net - right post</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">548</span>, <span class="dv">382</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1387</span>, <span class="dv">382</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">965</span>, <span class="dv">382</span>],    <span class="co"># Far service line - center T</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">310</span>, <span class="dv">796</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">1622</span>, <span class="dv">796</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">964</span>, <span class="dv">796</span>],   <span class="co"># Near service line - center T</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>court_points <span class="op">=</span> np.float32([</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Original 4 corners</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>],       <span class="co"># Back-left corner</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">0</span>],      <span class="co"># Back-right corner</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">20</span>],      <span class="co"># Front-left corner</span></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">20</span>],     <span class="co"># Front-right corner</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Net line (meets side walls)</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],      <span class="co"># Net - left post</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],     <span class="co"># Net - right post</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Far service line (near the back/far baseline, y=0)</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - left sideline intersection</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">3.05</span>],   <span class="co"># Far service line - right sideline intersection</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">3.05</span>],    <span class="co"># Far service line - center T</span></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Near service line (near the front/camera baseline, y=20)</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - left sideline intersection</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],  <span class="co"># Near service line - right sideline intersection</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="fl">16.95</span>],   <span class="co"># Near service line - center T</span></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>])</span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>H, status <span class="op">=</span> cv2.findHomography(</span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>    image_points,</span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    court_points</span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="co"># Extract image coordinates</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>points <span class="op">=</span> feet_positions[[<span class="st">"x"</span>, <span class="st">"y"</span>]].values.astype(np.float32)</span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="co"># Transform into court coordinates</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>court_positions <span class="op">=</span> cv2.perspectiveTransform(</span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>    points.reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">1</span>, <span class="dv">2</span>),</span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>    H</span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>).reshape(<span class="op">-</span><span class="dv">1</span>, <span class="dv">2</span>)</span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="co"># Add transformed coordinates</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_x"</span>] <span class="op">=</span> court_positions[:, <span class="dv">0</span>]</span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>feet_positions[<span class="st">"court_y"</span>] <span class="op">=</span> court_positions[:, <span class="dv">1</span>]</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </section>
 <section id="heatmap-visualization" class="level4">
@@ -332,191 +272,191 @@ Cell <span class="ansi-green-fg ansi-bold">In[2], line 1</span>
 <p>The valid positions were then converted into a two-dimensional histogram using <code>np.histogram2d()</code>. This divides the court into the predefined grid cells and counts how many player positions fall within each cell. Consequently, cells containing a larger number of player positions represent areas where the player was located more frequently.</p>
 <p>To obtain a smoother representation of player positioning, a Gaussian filter with a sigma of 8 was applied to the resulting histogram. We then normalized the resulting heatmap by dividing all values by the maximum value for that player and we plotted the normalized heatmaps using <code>contourf()</code> with a different color map assigned to each player.</p>
 <p>We also drew the court lines on the heatmap to provide context for the player positions.</p>
-<div id="b1db3719" class="cell" data-execution_count="5">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions </span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Grid for the heatmap</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>nx <span class="op">=</span> <span class="dv">200</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>ny <span class="op">=</span> <span class="dv">400</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>x_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_width, nx <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>y_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_length, ny <span class="op">+</span> <span class="dv">1</span>)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>x_centers <span class="op">=</span> (x_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> x_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>y_centers <span class="op">=</span> (y_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> y_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>X, Y <span class="op">=</span> np.meshgrid(x_centers, y_centers)</span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Player colors</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>player_colors <span class="op">=</span> {</span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Reds"</span>,</span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Blues"</span>,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Greens"</span>,</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Purples"</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure creation</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">16</span>))</span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Heatmap for each player</span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique()):</span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>    player_data <span class="op">=</span> feet_positions[</span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>        feet_positions[<span class="st">"player_id"</span>] <span class="op">==</span> player_id</span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a>    ]</span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> player_data[<span class="st">"court_x"</span>].to_numpy()</span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> player_data[<span class="st">"court_y"</span>].to_numpy()</span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove invalid points</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> np.isfinite(x) <span class="op">&amp;</span> np.isfinite(y)</span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only points inside court</span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> (</span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>        (x <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (x <span class="op">&lt;=</span> court_width) <span class="op">&amp;</span></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>        (y <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (y <span class="op">&lt;=</span> court_length)</span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2D histogram</span></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>    heatmap, _, _ <span class="op">=</span> np.histogram2d(</span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>        x,</span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>        y,</span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a>        bins<span class="op">=</span>[x_edges, y_edges]</span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Transpose because histogram2d returns [x,y]</span></span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> heatmap.T</span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Smooth the heatmap</span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> gaussian_filter(</span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        sigma<span class="op">=</span><span class="dv">8</span></span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Normalize this player's heatmap</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> heatmap.<span class="bu">max</span>() <span class="op">&gt;</span> <span class="dv">0</span>:</span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>        heatmap <span class="op">=</span> heatmap <span class="op">/</span> heatmap.<span class="bu">max</span>()</span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot</span></span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>    ax.contourf(</span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>        X,</span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>        Y,</span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>        levels<span class="op">=</span>np.linspace(<span class="fl">0.05</span>, <span class="dv">1</span>, <span class="dv">15</span>),</span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span>player_colors[player_id],</span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">0.45</span></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions</span></span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="co"># Outer court</span></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">0</span>],</span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">0</span>],</span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Net</span></span>
-<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
-<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],</span>
-<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
-<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Service lines</span></span>
-<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side service line</span></span>
-<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
-<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="fl">3.05</span>],</span>
-<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
-<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side service line</span></span>
-<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
-<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">16.95</span>, <span class="fl">16.95</span>],</span>
-<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
-<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Center service lines</span></span>
-<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side T</span></span>
-<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
-<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="dv">10</span>],</span>
-<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
-<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side T</span></span>
-<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
-<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
-<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],</span>
-<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
-<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
-<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a><span class="co"># Labels </span></span>
-<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">0</span>, <span class="dv">10</span>)</span>
-<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="dv">20</span>)</span>
-<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
-<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Court width (m)"</span>)</span>
-<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Court length (m)"</span>)</span>
-<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Padel Player Heatmap"</span>)</span>
-<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a>ax.invert_yaxis()</span>
-<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a><span class="co"># Legend</span></span>
-<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-163"><a href="#cb5-163" aria-hidden="true" tabindex="-1"></a>player_names <span class="op">=</span> {</span>
-<span id="cb5-164"><a href="#cb5-164" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Chingotto"</span>,</span>
-<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Tapia"</span>,</span>
-<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Lebron"</span>,</span>
-<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Galán"</span></span>
-<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>legend <span class="op">=</span> [</span>
-<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>    Patch(</span>
-<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>        facecolor<span class="op">=</span>plt.get_cmap(player_colors[player_id])(<span class="fl">0.7</span>),</span>
-<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span>player_names[player_id]</span>
-<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique())</span>
-<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>]</span>
-<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>ax.legend(handles<span class="op">=</span>legend)</span>
-<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div id="b1db3719" class="cell" data-execution_count="9">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions </span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Grid for the heatmap</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>nx <span class="op">=</span> <span class="dv">200</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>ny <span class="op">=</span> <span class="dv">400</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>x_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_width, nx <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>y_edges <span class="op">=</span> np.linspace(<span class="dv">0</span>, court_length, ny <span class="op">+</span> <span class="dv">1</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>x_centers <span class="op">=</span> (x_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> x_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>y_centers <span class="op">=</span> (y_edges[:<span class="op">-</span><span class="dv">1</span>] <span class="op">+</span> y_edges[<span class="dv">1</span>:]) <span class="op">/</span> <span class="dv">2</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>X, Y <span class="op">=</span> np.meshgrid(x_centers, y_centers)</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># Player colors</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>player_colors <span class="op">=</span> {</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Reds"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Blues"</span>,</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Greens"</span>,</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Purples"</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Figure creation</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>fig, ax <span class="op">=</span> plt.subplots(figsize<span class="op">=</span>(<span class="dv">8</span>, <span class="dv">16</span>))</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># Heatmap for each player</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique()):</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    player_data <span class="op">=</span> feet_positions[</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>        feet_positions[<span class="st">"player_id"</span>] <span class="op">==</span> player_id</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    ]</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> player_data[<span class="st">"court_x"</span>].to_numpy()</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> player_data[<span class="st">"court_y"</span>].to_numpy()</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Remove invalid points</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> np.isfinite(x) <span class="op">&amp;</span> np.isfinite(y)</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Keep only points inside court</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    valid <span class="op">=</span> (</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>        (x <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (x <span class="op">&lt;=</span> court_width) <span class="op">&amp;</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>        (y <span class="op">&gt;=</span> <span class="dv">0</span>) <span class="op">&amp;</span> (y <span class="op">&lt;=</span> court_length)</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x[valid]</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    y <span class="op">=</span> y[valid]</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>    <span class="co"># 2D histogram</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    heatmap, _, _ <span class="op">=</span> np.histogram2d(</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>        x,</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>        y,</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>        bins<span class="op">=</span>[x_edges, y_edges]</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Transpose because histogram2d returns [x,y]</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> heatmap.T</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Smooth the heatmap</span></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a>    heatmap <span class="op">=</span> gaussian_filter(</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>        sigma<span class="op">=</span><span class="dv">8</span></span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Normalize this player's heatmap</span></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> heatmap.<span class="bu">max</span>() <span class="op">&gt;</span> <span class="dv">0</span>:</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>        heatmap <span class="op">=</span> heatmap <span class="op">/</span> heatmap.<span class="bu">max</span>()</span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Plot</span></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>    ax.contourf(</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>        X,</span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>        Y,</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a>        heatmap,</span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>        levels<span class="op">=</span>np.linspace(<span class="fl">0.05</span>, <span class="dv">1</span>, <span class="dv">15</span>),</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a>        cmap<span class="op">=</span>player_colors[player_id],</span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>        alpha<span class="op">=</span><span class="fl">0.45</span></span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a><span class="co"># Court dimensions</span></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a>court_width <span class="op">=</span> <span class="dv">10</span></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a>court_length <span class="op">=</span> <span class="dv">20</span></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a><span class="co"># Outer court</span></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>, <span class="dv">10</span>, <span class="dv">0</span>, <span class="dv">0</span>],</span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">0</span>, <span class="dv">20</span>, <span class="dv">20</span>, <span class="dv">0</span>],</span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a><span class="co"># Net</span></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="dv">10</span>],</span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="dv">2</span></span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a><span class="co"># Service lines</span></span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side service line</span></span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="fl">3.05</span>],</span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side service line</span></span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">0</span>, <span class="dv">10</span>],</span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">16.95</span>, <span class="fl">16.95</span>],</span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Center service lines</span></span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a><span class="co"># Near side T</span></span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a>    [<span class="fl">3.05</span>, <span class="dv">10</span>],</span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a><span class="co"># Far side T</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a>ax.plot(</span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">5</span>, <span class="dv">5</span>],</span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a>    [<span class="dv">10</span>, <span class="fl">16.95</span>],</span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a>    color<span class="op">=</span><span class="st">"black"</span>,</span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a>    linewidth<span class="op">=</span><span class="fl">1.5</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a><span class="co"># Labels </span></span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a>ax.set_xlim(<span class="dv">0</span>, <span class="dv">10</span>)</span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a>ax.set_ylim(<span class="dv">0</span>, <span class="dv">20</span>)</span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a>ax.set_aspect(<span class="st">"equal"</span>)</span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a>ax.set_xlabel(<span class="st">"Court width (m)"</span>)</span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a>ax.set_ylabel(<span class="st">"Court length (m)"</span>)</span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a>ax.set_title(<span class="st">"Padel Player Heatmap"</span>)</span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a>ax.invert_yaxis()</span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a><span class="co"># Legend</span></span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a>player_names <span class="op">=</span> {</span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a>    <span class="dv">1</span>: <span class="st">"Chingotto"</span>,</span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a>    <span class="dv">2</span>: <span class="st">"Tapia"</span>,</span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a>    <span class="dv">3</span>: <span class="st">"Lebron"</span>,</span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a>    <span class="dv">4</span>: <span class="st">"Galán"</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a>legend <span class="op">=</span> [</span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a>    Patch(</span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a>        facecolor<span class="op">=</span>plt.get_cmap(player_colors[player_id])(<span class="fl">0.7</span>),</span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a>        label<span class="op">=</span>player_names[player_id]</span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> player_id <span class="kw">in</span> <span class="bu">sorted</span>(feet_positions[<span class="st">"player_id"</span>].unique())</span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a>]</span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a>ax.legend(handles<span class="op">=</span>legend)</span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="cell-output cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="index_files/figure-html/cell-6-output-1.png" class="img-fluid figure-img"></p>
+<p><img src="index_files/figure-html/cell-5-output-1.png" class="img-fluid figure-img"></p>
 </figure>
 </div>
 </div>
